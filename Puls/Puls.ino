@@ -1,36 +1,38 @@
-/*********
-  Complete project details at https://randomnerdtutorials.com
+/*
+Fil: Puls.ino
+Författare: Hugo Cedervist
+Datum 2023-12-13
+Beskrivning: Det är en kod som använder sig av komponenten ad8232 för att a reda på nervsignalerna för att sedan rita ut dem på på en oled skärm. Den använder även
+infon för att beräkna en persons puls och även då visa den på skärmen. 
+*/
 
-  This is an example for our Monochrome OLEDs based on SSD1306 drivers. Pick one up today in the adafruit shop! ------> http://www.adafruit.com/category/63_98
-  This example is for a 128x32 pixel display using I2C to communicate 3 pins are required to interface (two I2C and one reset).
-  Adafruit invests time and resources providing this open source code, please support Adafruit and open-source hardware by purchasing products from Adafruit!
-  Written by Limor Fried/Ladyada for Adafruit Industries, with contributions from the open source community. BSD license, check license.txt for more information All text above, and the splash screen below must be included in any redistribution.
-*********/
+//här inkluderar jag biblioteken som krävs för att koden ska fungera:
 #include <Arduino.h>
 #include <SPI.h>
 #include <Wire.h>
 #include <Adafruit_GFX.h>
 #include <Adafruit_SSD1306.h>
 
+//Här definerar jag konstanta värden:
 #define SCREEN_WIDTH 128
 #define SCREEN_HEIGHT 64
-
-
 #define OLED_RESET     -1 // Reset pin # (or -1 if sharing Arduino reset pin)
-Adafruit_SSD1306 display(SCREEN_WIDTH, SCREEN_HEIGHT, &Wire, OLED_RESET);
+const int analogInputPin = A0; // Analog pin where AD8232 output is connected
 
-const int analogInputPin = A0;  // Analog pin where AD8232 output is connected
-int rawValue;
-int lastRawValue = 0;
+// Här definerar jag variabler: 
+unsigned long previousMillis = 0;
 unsigned long lastBeatTime = 0;
 const int threshold = 550;  // Adjust this threshold based on your setup
-int bpm = 0;
-
-unsigned long previousMillis = 0;
 const int samplingRate = 500;
-
+int bpm = 0;
 int i = 0;
 int NewValue1 = 0;
+int rawValue;
+int lastRawValue = 0;
+
+//här definerar jag skärmen som jag använder: 
+Adafruit_SSD1306 display(SCREEN_WIDTH, SCREEN_HEIGHT, &Wire, OLED_RESET);
+
 
 void setup() {
   Serial.begin(115200);
@@ -42,11 +44,8 @@ void setup() {
   pinMode(10, INPUT); // Setup for leads off detection LO +
   pinMode(11, INPUT); // Setup for leads off detection LO -
 
-
-
   display.display();
   delay(2000); // Pause for 2 seconds
-
 
   display.clearDisplay();
 
@@ -76,12 +75,13 @@ void loop() {
   screen();
   delay(1);
 
+//Här skulle jag gjort en toggle knapp som byten mellan att visa funktionerna ovanför och funktionen under.
+
+  //bpm();
+
 }
 
-
-
-
-
+//Den här funktionen använder sig av ad8232 och ritar sedan ut värdena som skickas tillbaka i serial plottern.
 void ecg() {
   if ((digitalRead(10) == 1) || (digitalRead(11) == 1)) {
     Serial.println('!');
@@ -90,12 +90,10 @@ void ecg() {
     // send the value of analog input 0:
     Serial.println(analogRead(A0));
   }
-  //Wait for a bit to keep serial data from saturating
-
-  
-
 }
 
+
+//Den här funktionen använder sig av värdena som ecg funktionen ritar ut för att sedan rita ut dem på en skärm. 
 void screen() {
   int NewValue = 128 - ((analogRead(A0)) / 4);
   if (i < 129) {
@@ -105,12 +103,12 @@ void screen() {
     if (i == 128) {
       display.clearDisplay();
       display.display();
-
       i = 1;
     }
   }
 }
 
+//Denna funktionen använder ecg värdena för att se hur många gånger dem värden går över en satt gräns och på så sätt kan mäta pulsen, sedan ritar den ut det på skärmen.
 void bpm1() {
   rawValue = analogRead(analogInputPin);
 
