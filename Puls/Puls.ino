@@ -95,7 +95,7 @@ void ecg() {
 
 //Den här funktionen använder sig av värdena som ecg funktionen ritar ut för att sedan rita ut dem på en skärm. 
 void screen() {
-  int NewValue = 128 - ((analogRead(A0)) / 4);
+  int NewValue = 64 - ((analogRead(A0)) / 8);
   if (i < 129) {
     display.drawPixel(i, NewValue , WHITE);
     display.display();
